@@ -11,6 +11,7 @@ import Progress from "./Progress";
 import FinishScreen from "./FinishScreen";
 import Footer from "./Footer";
 import Timer from "./Timer";
+import PreviousButton from "./PreviousButton";
 
 const SECS_PER_QUESTION = 30;
 
@@ -19,7 +20,7 @@ const initialState = {
   // loading, error, ready, active, finished
   status: "loading",
   index: 0,
-  answer: null,
+  answers: [],
   points: 0,
   highscore: 0,
   secondsRemaining: null,
@@ -42,6 +43,7 @@ function reducer(state, action) {
       return {
         ...state,
         status: "active",
+        answers: state.questions.map((_) => null),
         secondsRemaining: state.questions.length * SECS_PER_QUESTION,
       };
     case "newAnswer":
@@ -49,7 +51,9 @@ function reducer(state, action) {
 
       return {
         ...state,
-        answer: action.payload,
+        answers: state.answers.map((answer, index) =>
+          index === state.index ? action.payload : answer
+        ),
         points:
           action.payload === question.correctOption
             ? state.points + question.points
@@ -57,6 +61,8 @@ function reducer(state, action) {
       };
     case "nextQuestion":
       return { ...state, index: state.index + 1, answer: null };
+    case "previousQuestion":
+      return { ...state, index: state.index - 1 };
     case "finish":
       return {
         ...state,
@@ -90,11 +96,15 @@ function reducer(state, action) {
 
 function App() {
   const [
-    { questions, status, index, answer, points, highscore, secondsRemaining },
+    { questions, status, index, answers, points, highscore, secondsRemaining },
     dispatch,
   ] = useReducer(reducer, initialState);
+
   const numQuestions = questions.length;
   const maxPossiblePoints = questions.reduce((acc, cur) => acc + cur.points, 0);
+  const numAnsweredQuestions = answers.filter(
+    (answer) => answer !== null
+  ).length;
 
   useEffect(function () {
     fetch("http://localhost:8000/questions")
@@ -116,21 +126,22 @@ function App() {
           <>
             <Progress
               numQuestions={numQuestions}
+              numAnsweredQuestions={numAnsweredQuestions}
               index={index}
               points={points}
               maxPossiblePoints={maxPossiblePoints}
-              answer={answer}
             />
             <Question
               question={questions[index]}
               dispatch={dispatch}
-              answer={answer}
+              answer={answers[index]}
             />
             <Footer>
               <Timer secondsRemaining={secondsRemaining} dispatch={dispatch} />
+              <PreviousButton dispatch={dispatch} index={index} />
               <NextButton
                 dispatch={dispatch}
-                answer={answer}
+                answer={answers[index]}
                 index={index}
                 numQuestions={numQuestions}
               />
