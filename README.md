@@ -1,8 +1,12 @@
+# REACT QUIZ
+
+#### Simple quiz app showcasing useReducer hook
+
 # Challenges
 
 - select difficulty of quiz on start screen, load only questions that match the difficulty
 - store highscore in fake api, load it when user reloads app
-- store all the given answers instead of just the current answer, so user can go back and forth and check their answers
+- ✅ store all the given answers instead of just the current answer, so user can go back and forth and check their answers
 
 <!-- # Getting Started with Create React App
 
